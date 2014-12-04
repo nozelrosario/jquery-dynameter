@@ -3,7 +3,7 @@
     $.fn.dynameter = function ( options ) {
         var defaults = {
             label: 'DynaMeter',
-            value: 50,
+            value: null,
             min: 0,
             max: 100,
             regions: {  // Value-keys and color-refs.  E.g., value: 'normal'|'warn|'error', etc.
@@ -51,13 +51,22 @@
             var $this = $(this);  // Div that's getting DynaMeter-ized.
 
             function updateValue (myVal) {
-                var myMin = $this.data('dm-min');
-                var myRange = $this.data('dm-range');
+               var myRelVal, myDeg, myMin, myRange, display;
+                myMin = $this.data('dm-min');
+                myRange = $this.data('dm-range');
+                // calculate dimensions
+                if(myVal) {
+                   display = myVal;                   
+                   myRelVal = myVal - myMin;
+                   myDeg = myRelVal / myRange * 180;
+                } else {
+                   display = "-";
+                   myRelVal = 0;
+                   myDeg = 0;
+                }
                 // Update value text.
                 $this.find('.dm-innerDiv .dm-valueP').html(myVal);
                 // Rotate mask div.
-                var myRelVal = myVal - myMin;
-                var myDeg = myRelVal / myRange * 180;
                 $this.find('.dm-maskDiv').css({
                     '-webkit-transform': 'rotate(' + myDeg + 'deg)',
                     '-ms-transform': 'rotate(' + myDeg + 'deg)',
@@ -71,9 +80,9 @@
             // Initialize once.
             if (!$this.hasClass('dm-wrapperDiv')) {
                 // Skip init if settings are invalid.
-                if (settings.value < settings.min ||
+                if (settings.value && (settings.value < settings.min ||
                     settings.value > settings.max ||
-                    settings.min >= settings.max) {
+                    settings.min >= settings.max)) {
                     throw new Error("DynaMeter initialization failed -- invalid value/min/max settings.");
                 }
                 var currClrRef;
@@ -156,10 +165,10 @@
                         .prependTo($this);
                 }
 
+                    
                 console.log('[dynameter] div#' + $this.attr('id') + ' initialized.');
 
             }
-
             updateValue(settings.value);
 
         });
